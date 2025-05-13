@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-net
+
+
+  app:
+    image: samucadojava/finance-tec-test:latest
+    container_name: finance-tec-test-dockerhub
+    ports:
+      - "8081:8080"
+    depends_on:
+      - redis
+    networks:
+      - app-net
+    environment:
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finance-tec-test-web
+    ports:
+      - "8082:8080"
+    depends_on:
+      - redis
+    networks:
+      - app-net
+    environment:
+      - BASE_URL_API="http://finance-tec-test-dockerhub:8081/api"
+
+networks:
+  app-net:
+    driver: bridge
